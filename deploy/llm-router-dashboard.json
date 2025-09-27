@@ -30,7 +30,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "febzoy4cplt6oe"
+        "uid": "${DS_PROMETHEUS}"
       },
       "fieldConfig": {
         "defaults": {
@@ -90,7 +90,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "febzoy4cplt6oe"
+            "uid": "${DS_PROMETHEUS}"
           },
           "disableTextWrap": false,
           "editorMode": "builder",
@@ -110,7 +110,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "febzoy4cplt6oe"
+        "uid": "${DS_PROMETHEUS}"
       },
       "fieldConfig": {
         "defaults": {
@@ -193,7 +193,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "febzoy4cplt6oe"
+            "uid": "${DS_PROMETHEUS}"
           },
           "editorMode": "code",
           "expr": "sum(rate(llm_model_completion_tokens_total[5m])) by (model)",
@@ -208,7 +208,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "febzoy4cplt6oe"
+        "uid": "${DS_PROMETHEUS}"
       },
       "fieldConfig": {
         "defaults": {
@@ -291,7 +291,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "febzoy4cplt6oe"
+            "uid": "${DS_PROMETHEUS}"
           },
           "editorMode": "code",
           "expr": "sum(rate(llm_model_routing_modifications_total[5m])) by (source_model, target_model)",
@@ -307,7 +307,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "febzoy4cplt6oe"
+        "uid": "${DS_PROMETHEUS}"
       },
       "fieldConfig": {
         "defaults": {
@@ -394,7 +394,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "febzoy4cplt6oe"
+            "uid": "${DS_PROMETHEUS}"
           },
           "editorMode": "code",
           "expr": "histogram_quantile(0.95, sum(rate(llm_model_completion_latency_seconds_bucket[5m])) by (le, model))",
@@ -416,17 +416,12 @@
   "templating": {
     "list": [
       {
-        "current": {
-          "text": "prometheus",
-          "value": "febzoy4cplt6oe"
-        },
-        "includeAll": false,
         "name": "DS_PROMETHEUS",
-        "options": [],
+        "label": "Prometheus DS",
+        "type": "datasource",
         "query": "prometheus",
-        "refresh": 1,
-        "regex": "",
-        "type": "datasource"
+        "includeAll": false,
+        "refresh": 1
       }
     ]
   },
@@ -438,6 +433,6 @@
   "timezone": "",
   "title": "LLM Router Metrics",
   "uid": "llm-router-metrics",
-  "version": 12,
+  "version": 13,
   "weekStart": ""
 }
