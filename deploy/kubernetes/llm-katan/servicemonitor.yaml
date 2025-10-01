@@ -1,0 +1,28 @@
+# ServiceMonitor for Prometheus Operator
+# Automatically scrapes metrics from llm-katan instances
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: llm-katan
+  labels:
+    app: llm-katan
+    release: prometheus  # Match your Prometheus Operator release name
+spec:
+  selector:
+    matchLabels:
+      app: llm-katan
+  endpoints:
+  - port: metrics
+    path: /metrics
+    interval: 15s
+    scrapeTimeout: 10s
+    relabelings:
+    - sourceLabels: [__meta_kubernetes_pod_label_model]
+      targetLabel: model
+    - sourceLabels: [__meta_kubernetes_pod_label_instance]
+      targetLabel: instance_name
+    - sourceLabels: [__meta_kubernetes_namespace]
+      targetLabel: namespace
+  namespaceSelector:
+    matchNames:
+    - vllm-semantic-router-system

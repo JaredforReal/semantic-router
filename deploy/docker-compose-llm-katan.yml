@@ -1,0 +1,155 @@
+# Docker Compose configuration for LLM Katan integration
+# Extends the main docker-compose.yml with multiple llm-katan instances
+# 
+# Usage:
+#   docker compose -f docker-compose.yml -f deploy/docker-compose-llm-katan.yml --profile llm-katan up
+#
+# This setup simulates multiple LLM providers using the same tiny model:
+# - gpt-3.5-turbo on port 8100
+# - claude-3-haiku on port 8101
+# - Meta-Llama-3.1-8B on port 8102
+
+version: '3.8'
+
+services:
+  # LLM Katan instance 1: Simulates GPT-3.5-Turbo
+  llm-katan-gpt:
+    image: ghcr.io/vllm-project/semantic-router/llm-katan:latest
+    container_name: llm-katan-gpt
+    profiles: ["llm-katan", "testing-extended"]
+    ports:
+      - "8100:8000"
+    environment:
+      - HUGGINGFACE_HUB_TOKEN=${HUGGINGFACE_HUB_TOKEN:-}
+      - YLLM_MODEL=Qwen/Qwen3-0.6B
+      - YLLM_PORT=8000
+      - YLLM_BACKEND=transformers
+    command: [
+      "llm-katan",
+      "--model", "Qwen/Qwen3-0.6B",
+      "--served-model-name", "gpt-3.5-turbo",
+      "--host", "0.0.0.0",
+      "--port", "8000",
+      "--max-tokens", "512",
+      "--temperature", "0.7",
+      "--log-level", "INFO"
+    ]
+    networks:
+      - semantic-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+    labels:
+      - "prometheus.scrape=true"
+      - "prometheus.port=8000"
+      - "prometheus.path=/metrics"
+      - "service.name=llm-katan-gpt"
+      - "model.served=gpt-3.5-turbo"
+
+  # LLM Katan instance 2: Simulates Claude-3-Haiku
+  llm-katan-claude:
+    image: ghcr.io/vllm-project/semantic-router/llm-katan:latest
+    container_name: llm-katan-claude
+    profiles: ["llm-katan", "testing-extended"]
+    ports:
+      - "8101:8000"
+    environment:
+      - HUGGINGFACE_HUB_TOKEN=${HUGGINGFACE_HUB_TOKEN:-}
+      - YLLM_MODEL=Qwen/Qwen3-0.6B
+      - YLLM_PORT=8000
+      - YLLM_BACKEND=transformers
+    command: [
+      "llm-katan",
+      "--model", "Qwen/Qwen3-0.6B",
+      "--served-model-name", "claude-3-haiku",
+      "--host", "0.0.0.0",
+      "--port", "8000",
+      "--max-tokens", "768",
+      "--temperature", "0.5",
+      "--log-level", "INFO"
+    ]
+    networks:
+      - semantic-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+    labels:
+      - "prometheus.scrape=true"
+      - "prometheus.port=8000"
+      - "prometheus.path=/metrics"
+      - "service.name=llm-katan-claude"
+      - "model.served=claude-3-haiku"
+
+  # LLM Katan instance 3: Simulates Meta-Llama
+  llm-katan-llama:
+    image: ghcr.io/vllm-project/semantic-router/llm-katan:latest
+    container_name: llm-katan-llama
+    profiles: ["llm-katan", "testing-extended"]
+    ports:
+      - "8102:8000"
+    environment:
+      - HUGGINGFACE_HUB_TOKEN=${HUGGINGFACE_HUB_TOKEN:-}
+      - YLLM_MODEL=Qwen/Qwen3-0.6B
+      - YLLM_PORT=8000
+      - YLLM_BACKEND=transformers
+    command: [
+      "llm-katan",
+      "--model", "Qwen/Qwen3-0.6B",
+      "--served-model-name", "Meta-Llama-3.1-8B",
+      "--host", "0.0.0.0",
+      "--port", "8000",
+      "--max-tokens", "1024",
+      "--temperature", "0.9",
+      "--log-level", "INFO"
+    ]
+    networks:
+      - semantic-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+    labels:
+      - "prometheus.scrape=true"
+      - "prometheus.port=8000"
+      - "prometheus.path=/metrics"
+      - "service.name=llm-katan-llama"
+      - "model.served=Meta-Llama-3.1-8B"
+
+  # Prometheus configuration override to scrape llm-katan instances
+  prometheus-llm-katan:
+    image: prom/prometheus:latest
+    container_name: prometheus-llm-katan
+    profiles: ["llm-katan"]
+    volumes:
+      - ./deploy/config/prometheus-llm-katan.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus-llm-katan-data:/prometheus
+    ports:
+      - "9091:9090"
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/usr/share/prometheus/console_libraries'
+      - '--web.console.templates=/usr/share/prometheus/consoles'
+      - '--storage.tsdb.retention.time=7d'
+    networks:
+      - semantic-network
+    depends_on:
+      - llm-katan-gpt
+      - llm-katan-claude
+      - llm-katan-llama
+
+volumes:
+  prometheus-llm-katan-data:
+    driver: local
+
+networks:
+  semantic-network:
+    external: true

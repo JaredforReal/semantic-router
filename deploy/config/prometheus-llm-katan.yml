@@ -1,0 +1,67 @@
+# Prometheus configuration for LLM Katan instances
+# Scrapes metrics from all llm-katan containers in Docker Compose setup
+
+global:
+  scrape_interval: 10s
+  evaluation_interval: 10s
+  external_labels:
+    environment: 'docker-llm-katan'
+
+scrape_configs:
+  # Self monitoring
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+
+  # LLM Katan - GPT-3.5-Turbo simulation
+  - job_name: 'llm-katan-gpt'
+    metrics_path: /metrics
+    static_configs:
+      - targets: ['llm-katan-gpt:8000']
+        labels:
+          service: 'llm-katan'
+          model: 'gpt-3.5-turbo'
+          backend: 'transformers'
+          instance_type: 'simulated'
+
+  # LLM Katan - Claude-3-Haiku simulation
+  - job_name: 'llm-katan-claude'
+    metrics_path: /metrics
+    static_configs:
+      - targets: ['llm-katan-claude:8000']
+        labels:
+          service: 'llm-katan'
+          model: 'claude-3-haiku'
+          backend: 'transformers'
+          instance_type: 'simulated'
+
+  # LLM Katan - Meta-Llama simulation
+  - job_name: 'llm-katan-llama'
+    metrics_path: /metrics
+    static_configs:
+      - targets: ['llm-katan-llama:8000']
+        labels:
+          service: 'llm-katan'
+          model: 'Meta-Llama-3.1-8B'
+          backend: 'transformers'
+          instance_type: 'simulated'
+
+  # Semantic Router (if running)
+  - job_name: 'semantic-router'
+    metrics_path: /metrics
+    static_configs:
+      - targets: ['semantic-router:9190']
+        labels:
+          service: 'semantic-router'
+          env: 'dev'
+
+  # Mock vLLM (if running with testing profile)
+  - job_name: 'mock-vllm'
+    metrics_path: /metrics
+    static_configs:
+      - targets: ['mock-vllm:8000']
+        labels:
+          service: 'mock-vllm'
+          type: 'static-mock'
+    # Optional: disable if not running
+    honor_labels: true

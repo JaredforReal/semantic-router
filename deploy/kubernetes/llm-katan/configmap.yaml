@@ -1,0 +1,21 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: llm-katan-config
+  labels:
+    app: llm-katan
+    component: config
+data:
+  # Default model to use across all instances
+  default_model: "Qwen/Qwen3-0.6B"
+  backend: "transformers"
+  max_tokens: "512"
+  temperature: "0.7"
+  log_level: "INFO"
+  
+  # Model instance configurations
+  # Format: "instance_name:served_model_name:port:temperature:max_tokens"
+  model_instances: |
+    gpt:gpt-3.5-turbo:8000:0.7:512
+    claude:claude-3-haiku:8000:0.5:768
+    llama:Meta-Llama-3.1-8B:8000:0.9:1024
